@@ -27,9 +27,8 @@ COPY backend/ ./
 # Copy built frontend into backend's static folder
 COPY --from=frontend-builder /app/frontend/dist ./static
 
-ENV PORT=8000
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-CMD uvicorn app.main:app --host 0.0.0.0 --port ${PORT}
+CMD uvicorn app.main:app --host 0.0.0.0 --port 8000
