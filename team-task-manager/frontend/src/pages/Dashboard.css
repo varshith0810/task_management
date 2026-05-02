@@ -1,0 +1,53 @@
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+@media (max-width: 900px) { .dash-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .dash-stats { grid-template-columns: 1fr; } }
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 768px) { .dash-grid { grid-template-columns: 1fr; } }
+
+/* Status bars */
+.status-bars { display: flex; flex-direction: column; gap: 10px; }
+.status-bar-row { display: flex; align-items: center; gap: 10px; }
+.status-bar-track {
+  flex: 1; height: 6px;
+  background: var(--bg-3); border-radius: 3px; overflow: hidden;
+}
+.status-bar-fill {
+  height: 100%; border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.status-fill-todo { background: var(--text-3); }
+.status-fill-in_progress { background: var(--blue); }
+.status-fill-in_review { background: var(--purple); }
+.status-fill-done { background: var(--green); }
+.status-fill-cancelled { background: var(--red); }
+.status-count { font-size: 13px; font-weight: 600; font-family: var(--font-display); color: var(--text-1); min-width: 20px; text-align: right; }
+
+/* My tasks */
+.my-tasks-list { display: flex; flex-direction: column; gap: 1px; }
+.my-task-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+.my-task-item:last-child { border-bottom: none; }
+.my-task-main { flex: 1; min-width: 0; }
+.my-task-title { font-size: 13px; font-weight: 500; color: var(--text-0); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.my-task-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.my-task-due { font-size: 12px; color: var(--text-2); font-family: var(--font-display); flex-shrink: 0; }
+.my-task-due.overdue { color: var(--red); }
+
+.error-msg {
+  background: var(--red-dim); border: 1px solid rgba(239,68,68,0.2);
+  color: #f87171; border-radius: var(--radius); padding: 14px 18px; font-size: 14px;
+}

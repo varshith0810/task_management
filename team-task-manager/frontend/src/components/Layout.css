@@ -1,0 +1,154 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--bg-1);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: width 0.25s ease;
+  overflow: hidden;
+}
+.layout-collapsed .sidebar { width: 64px; }
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+.brand-mark {
+  width: 32px; height: 32px;
+  background: var(--amber);
+  color: #000;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--text-0);
+  white-space: nowrap;
+}
+.sidebar-toggle {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-2); border-radius: 6px;
+  width: 24px; height: 24px;
+  cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.sidebar-toggle:hover { border-color: var(--amber); color: var(--amber); }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-1);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-display);
+  transition: all 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.nav-item:hover { background: var(--bg-3); color: var(--text-0); }
+.nav-item.active { background: var(--amber-glow); color: var(--amber); }
+.nav-icon { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
+.nav-label { overflow: hidden; }
+
+.sidebar-bottom {
+  padding: 14px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.user-row { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+.user-info { overflow: hidden; }
+.user-name { font-size: 13px; font-weight: 600; color: var(--text-0); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: 11px; color: var(--text-2); text-transform: capitalize; font-family: var(--font-display); }
+.logout-btn {
+  background: none; border: 1px solid var(--border);
+  color: var(--text-2); border-radius: var(--radius-sm);
+  padding: 7px 10px; cursor: pointer;
+  font-size: 12px; font-family: var(--font-display); font-weight: 600;
+  text-align: center; transition: all 0.15s;
+}
+.logout-btn:hover { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+/* ── Main content ─────────────────────────────────────────────────────── */
+.main-content {
+  flex: 1;
+  margin-left: 220px;
+  min-height: 100vh;
+  transition: margin-left 0.25s ease;
+  background: var(--bg-0);
+}
+.layout-collapsed .main-content { margin-left: 64px; }
+
+.page {
+  padding: 32px;
+  max-width: 1200px;
+  animation: fadeIn 0.25s ease;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-0);
+  line-height: 1.1;
+}
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .sidebar { width: 64px; }
+  .main-content { margin-left: 64px; }
+  .brand-name, .nav-label, .user-info, .logout-btn { display: none; }
+  .page { padding: 20px 16px; }
+}
