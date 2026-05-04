@@ -28,12 +28,4 @@ COPY backend/ ./
 COPY --from=frontend-builder /app/frontend/dist ./static
  
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
 EXPOSE 8000
- 
-# Write a start script that expands $PORT at runtime
-RUN echo '#!/bin/sh' > /start.sh && \
-    echo 'exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"' >> /start.sh && \
-    chmod +x /start.sh
- 
-ENTRYPOINT ["/bin/sh", "/start.sh"]
