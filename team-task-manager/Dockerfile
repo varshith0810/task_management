@@ -30,6 +30,8 @@ COPY --from=frontend-builder /app/frontend/dist ./static
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
-
-CMD uvicorn app.main:app --host 0.0.0.0 --port 8000
+# JSON array form is required so the process receives OS signals directly
+# (PID 1) rather than being wrapped in /bin/sh -c, which would swallow SIGTERM
+# and cause the healthcheck to time out before the app finishes starting.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
