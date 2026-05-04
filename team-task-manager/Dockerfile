@@ -3,6 +3,7 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 COPY frontend/package.json ./
+RUN npm install --legacy-peer-deps
 RUN npm install
 COPY frontend/ ./
 ARG VITE_API_URL=""
@@ -35,3 +36,4 @@ EXPOSE 8000
 # and cause the healthcheck to time out before the app finishes starting.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
+ 
