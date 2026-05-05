@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { dashboard } from '../api/client';
-import { StatusBadge, PriorityBadge, Avatar, Empty } from '../components/ui';
+import { StatusBadge, PriorityBadge, Empty } from '../components/ui';
 import './Dashboard.css';
 
 function formatDate(d) {
