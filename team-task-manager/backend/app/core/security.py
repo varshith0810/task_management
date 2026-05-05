@@ -1,45 +1,75 @@
+"""
+app/core/security.py
+--------------------
+JWT creation/decoding and password hashing.
+Uses bcrypt directly instead of passlib to avoid the
+bcrypt>=4.0 / passlib incompatibility (missing __about__).
+"""
+
+import bcrypt
 from datetime import datetime, timedelta, timezone
+from typing import Literal
+
 from jose import JWTError, jwt
-from passlib.context import CryptContext
-from fastapi import HTTPException, status
+
 from app.core.config import settings
-import re
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
+# ── Password hashing ──────────────────────────────────────────────────────────
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    """Hash a plain-text password using bcrypt."""
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    """Verify a plain-text password against a bcrypt hash."""
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def _create_token(subject: str, token_type: str, expires_delta: timedelta) -> str:
+# ── JWT ───────────────────────────────────────────────────────────────────────
+
+def _create_token(subject: int, token_type: Literal["access", "refresh"], expires_delta: timedelta) -> str:
     expire = datetime.now(timezone.utc) + expires_delta
-    payload = {"sub": str(subject), "type": token_type, "exp": expire}
+    payload = {
+        "sub": str(subject),
+        "type": token_type,
+        "exp": expire,
+    }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def create_access_token(user_id: int) -> str:
-    return _create_token(str(user_id), "access", timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+    return _create_token(
+        user_id,
+        "access",
+        timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+    )
 
 
 def create_refresh_token(user_id: int) -> str:
-    return _create_token(str(user_id), "refresh", timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS))
+    return _create_token(
+        user_id,
+        "refresh",
+        timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    )
 
 
-def decode_token(token: str, expected_type: str) -> str:
+def decode_token(token: str, expected_type: Literal["access", "refresh"]) -> str:
+    """Decode and validate a JWT. Returns the subject (user_id as str)."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        if payload.get("type") != expected_type:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
-        return payload["sub"]
     except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        )
 
+    if payload.get("type") != expected_type:
+        from fastapi import HTTPException, status
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Expected {expected_type} token",
+        )
 
-def validate_password_strength(password: str) -> bool:
-    """At least 8 chars, one uppercase, one digit."""
-    return bool(re.match(r'^(?=.*[A-Z])(?=.*\d).{8,}$', password))
+    return payload["sub"]
