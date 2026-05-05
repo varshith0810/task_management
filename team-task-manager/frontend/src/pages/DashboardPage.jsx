@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { dashboard } from '../api/client';
-import { StatusBadge, PriorityBadge, Avatar, Empty } from '../components/ui';
+import { StatusBadge, PriorityBadge, Empty } from '../components/ui';
 import './Dashboard.css';
 
 function formatDate(d) {
@@ -44,7 +43,7 @@ export default function DashboardPage() {
       <div className="page-header">
         <div>
           <div className="page-title">Dashboard</div>
-          <div className="page-subtitle">Your workspace at a glance</div>
+          <div className="page-subtitle">Manager workspace at a glance</div>
         </div>
       </div>
 
@@ -55,7 +54,7 @@ export default function DashboardPage() {
           <div className="stat-value amber">{data?.total_projects ?? 0}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Total Tasks</div>
+          <div className="stat-label">Tasks Allocated by You</div>
           <div className="stat-value">{data?.total_tasks ?? 0}</div>
         </div>
         <div className="stat-card">
@@ -109,6 +108,44 @@ export default function DashboardPage() {
                       {formatDate(task.due_date)}
                     </div>
                   )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div className="card-title" style={{ marginBottom: 16 }}>Member Task Load</div>
+          {!data?.member_task_counts?.length ? (
+            <Empty icon="👥" title="No assigned tasks" desc="Task load by member will appear here." />
+          ) : (
+            <div className="my-tasks-list">
+              {data.member_task_counts.map((member) => (
+                <div key={member.user_id} className="my-task-item">
+                  <div className="my-task-title">{member.full_name}</div>
+                  <div className="my-task-due">{member.task_count} tasks</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div className="card-title" style={{ marginBottom: 16 }}>Managed Tasks & Progress</div>
+          {!data?.managed_tasks?.length ? (
+            <Empty icon="📌" title="No managed tasks" desc="Tasks from your managed projects will appear here." />
+          ) : (
+            <div className="my-tasks-list">
+              {data.managed_tasks.map((task) => (
+                <div key={task.id} className="my-task-item">
+                  <div className="my-task-main">
+                    <div className="my-task-title">{task.title}</div>
+                    <div className="my-task-meta">
+                      <StatusBadge status={task.status} />
+                      <PriorityBadge priority={task.priority} />
+                    </div>
+                  </div>
+                  <div className="my-task-due">{task.assignee?.full_name || 'Unassigned'}</div>
                 </div>
               ))}
             </div>
