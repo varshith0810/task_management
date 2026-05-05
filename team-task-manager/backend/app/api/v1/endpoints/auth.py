@@ -33,6 +33,7 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
         email=payload.email,
         full_name=payload.full_name,
         hashed_password=hash_password(payload.password),
+        role=payload.role,
     )
     db.add(user)
     db.commit()

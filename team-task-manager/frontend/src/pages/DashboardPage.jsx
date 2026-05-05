@@ -114,6 +114,22 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+
+        <div className="card">
+          <div className="card-title" style={{ marginBottom: 16 }}>Member Task Load</div>
+          {!data?.member_task_counts?.length ? (
+            <Empty icon="👥" title="No assigned tasks" desc="Task load by member will appear here." />
+          ) : (
+            <div className="my-tasks-list">
+              {data.member_task_counts.map((member) => (
+                <div key={member.user_id} className="my-task-item">
+                  <div className="my-task-title">{member.full_name}</div>
+                  <div className="my-task-due">{member.task_count} tasks</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
