@@ -21,7 +21,10 @@ def get_dashboard(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Return summary stats scoped to the authenticated user (admin sees global stats)."""
+    """Return summary stats scoped to the authenticated user.
+
+    Admin/manager users are scoped to projects where they are OWNER or MANAGER.
+    """
  
     now = datetime.now(timezone.utc)
     is_admin = current_user.role == GlobalRole.ADMIN

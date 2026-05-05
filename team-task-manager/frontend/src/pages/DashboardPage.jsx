@@ -43,7 +43,7 @@ export default function DashboardPage() {
       <div className="page-header">
         <div>
           <div className="page-title">Dashboard</div>
-          <div className="page-subtitle">Your workspace at a glance</div>
+          <div className="page-subtitle">Manager workspace at a glance</div>
         </div>
       </div>
 

@@ -141,6 +141,8 @@ class TaskStatusCount(BaseModel):
 
 
 class MemberTaskCount(BaseModel):
+    """Task load per member for manager dashboard insights."""
+
     user_id: int
     full_name: str
     task_count: int
