@@ -130,7 +130,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-
         <div className="card">
           <div className="card-title" style={{ marginBottom: 16 }}>Managed Tasks & Progress</div>
           {!data?.managed_tasks?.length ? (
@@ -152,7 +151,6 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );
