@@ -18,25 +18,28 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    dashboard.get()
+    dashboard
+      .get()
       .then(setData)
-      .catch(e => setError(e.message))
+      .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return (
-    <div className="page">
-      <div className="page-header"><div className="skeleton" style={{ width: 180, height: 30 }} /></div>
-      <div className="dash-stats">
-        {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 90, borderRadius: 12 }} />)}
+  if (loading) {
+    return (
+      <div className="page">
+        <div className="page-header"><div className="skeleton" style={{ width: 180, height: 30 }} /></div>
+        <div className="dash-stats">
+          {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton" style={{ height: 90, borderRadius: 12 }} />)}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   if (error) return <div className="page"><div className="error-msg">{error}</div></div>;
 
-  const statusOrder = ['todo','in_progress','in_review','done','cancelled'];
-  const byStatus = Object.fromEntries((data?.tasks_by_status || []).map(s => [s.status, s.count]));
+  const statusOrder = ['todo', 'in_progress', 'in_review', 'done', 'cancelled'];
+  const byStatus = Object.fromEntries((data?.tasks_by_status || []).map((s) => [s.status, s.count]));
 
   return (
     <div className="page animate-fade">
@@ -47,7 +50,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="dash-stats">
         <div className="stat-card">
           <div className="stat-label">Total Projects</div>
@@ -68,11 +70,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="dash-grid">
-        {/* Status breakdown */}
         <div className="card">
           <div className="card-title" style={{ marginBottom: 16 }}>Tasks by Status</div>
           <div className="status-bars">
-            {statusOrder.map(s => (
+            {statusOrder.map((s) => (
               <div key={s} className="status-bar-row">
                 <StatusBadge status={s} />
                 <div className="status-bar-track">
@@ -87,14 +88,13 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* My tasks */}
         <div className="card">
           <div className="card-title" style={{ marginBottom: 16 }}>My Assigned Tasks</div>
           {!data?.my_assigned_tasks?.length ? (
             <Empty icon="✓" title="All clear!" desc="No open tasks assigned to you." />
           ) : (
             <div className="my-tasks-list">
-              {data.my_assigned_tasks.map(task => (
+              {data.my_assigned_tasks.map((task) => (
                 <div key={task.id} className="my-task-item">
                   <div className="my-task-main">
                     <div className="my-task-title">{task.title}</div>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-<<<<<<< codex/update-login-and-dashboard-behavior-ty9g0r
+
 
         <div className="card">
           <div className="card-title" style={{ marginBottom: 16 }}>Managed Tasks & Progress</div>
@@ -152,8 +152,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
-=======
->>>>>>> main
+
       </div>
     </div>
   );

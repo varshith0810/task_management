@@ -10,11 +10,14 @@ from sqlalchemy.orm import Session, joinedload
  
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
-<<<<<<< codex/update-login-and-dashboard-behavior-ty9g0r
+
 from app.models.models import GlobalRole, Project, ProjectMember, ProjectRole, Task, TaskStatus, User
-=======
+
+
+from app.models.models import GlobalRole, Project, ProjectMember, ProjectRole, Task, TaskStatus, User
+
 from app.models.models import GlobalRole, Project, ProjectMember, Task, TaskStatus, User
->>>>>>> main
+  
 from app.schemas.schemas import DashboardResponse, MemberTaskCount, TaskResponse, TaskStatusCount
  
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
@@ -63,10 +66,11 @@ def get_dashboard(
             tasks_by_status=[],
             my_assigned_tasks=[],
             member_task_counts=[],
-<<<<<<< codex/update-login-and-dashboard-behavior-ty9g0r
+codex/update-login-and-dashboard-behavior-hrr3vj
             managed_tasks=[],
-=======
->>>>>>> main
+
+            managed_tasks=[],
+          
         )
  
     task_base_q = db.query(Task).filter(Task.project_id.in_(project_ids))
@@ -110,14 +114,15 @@ def get_dashboard(
         member_rows = (
             db.query(User.id, User.full_name, func.count(Task.id))
             .join(Task, Task.assignee_id == User.id)
-<<<<<<< codex/update-login-and-dashboard-behavior-ty9g0r
+
+        
             .filter(
                 Task.project_id.in_(project_ids),
                 Task.creator_id == current_user.id,
             )
-=======
+
             .filter(Task.project_id.in_(project_ids))
->>>>>>> main
+          
             .group_by(User.id, User.full_name)
             .order_by(func.count(Task.id).desc())
             .all()
@@ -127,7 +132,8 @@ def get_dashboard(
             for user_id, full_name, count in member_rows
         ]
 
-<<<<<<< codex/update-login-and-dashboard-behavior-ty9g0r
+
+     
     managed_tasks_q = (
         db.query(Task)
         .options(joinedload(Task.assignee), joinedload(Task.creator))
@@ -138,8 +144,7 @@ def get_dashboard(
     if is_admin:
         managed_tasks_q = managed_tasks_q.filter(Task.creator_id == current_user.id)
 
-=======
->>>>>>> main
+
     return DashboardResponse(
         total_projects=total_projects,
         total_tasks=total_tasks,
@@ -147,9 +152,11 @@ def get_dashboard(
         tasks_by_status=tasks_by_status,
         my_assigned_tasks=[TaskResponse.model_validate(t) for t in my_tasks_q.all()],
         member_task_counts=member_task_counts,
-<<<<<<< codex/update-login-and-dashboard-behavior-ty9g0r
+
         managed_tasks=[TaskResponse.model_validate(t) for t in managed_tasks_q.all()],
-=======
->>>>>>> main
+
+      
+        managed_tasks=[TaskResponse.model_validate(t) for t in managed_tasks_q.all()],
+      
     )
  
