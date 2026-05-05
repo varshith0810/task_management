@@ -141,9 +141,7 @@ class TaskStatusCount(BaseModel):
 
 
 class MemberTaskCount(BaseModel):
-
     """Task load per member for manager dashboard insights."""
-
     user_id: int
     full_name: str
     task_count: int
@@ -156,8 +154,5 @@ class DashboardResponse(BaseModel):
     tasks_by_status: List[TaskStatusCount]
     my_assigned_tasks: List[TaskResponse]
     member_task_counts: List[MemberTaskCount]
-
-    managed_tasks: List[TaskResponse]
-
     managed_tasks: List[TaskResponse]
 
