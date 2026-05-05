@@ -129,6 +129,7 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+<<<<<<< codex/update-login-and-dashboard-behavior-ty9g0r
 
         <div className="card">
           <div className="card-title" style={{ marginBottom: 16 }}>Managed Tasks & Progress</div>
@@ -151,6 +152,8 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+=======
+>>>>>>> main
       </div>
     </div>
   );
