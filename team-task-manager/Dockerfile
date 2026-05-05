@@ -25,7 +25,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN uvicorn --version
 
 COPY backend/ ./
-COPY seed.py /app/seed.py
 COPY --from=frontend-builder /app/frontend/dist ./static
 
 ENV PYTHONUNBUFFERED=1
