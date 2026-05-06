@@ -24,6 +24,9 @@ def search_users(
 
             User.organization_name == current_user.organization_name,
 
+
+            User.organization_name == current_user.organization_name,
+
             (User.email.ilike(f"%{q}%") | User.full_name.ilike(f"%{q}%")),
         )
         .limit(20)

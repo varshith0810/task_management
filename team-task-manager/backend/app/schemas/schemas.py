@@ -1,12 +1,12 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from app.models.models import GlobalRole, ProjectRole, TaskStatus, TaskPriority
 import re
 
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
+
 
 class SignupRequest(BaseModel):
     email: EmailStr
@@ -17,12 +17,27 @@ class SignupRequest(BaseModel):
     organization_name: str
 
 
+    organization_name: str
+
+
+
     @field_validator("password")
     @classmethod
     def strong_password(cls, v):
         if not re.match(r'^(?=.*[A-Z])(?=.*\d).{8,}$', v):
             raise ValueError("Password must be 8+ chars with at least one uppercase and one digit")
         return v
+
+    @model_validator(mode="after")
+    def organization_matches_email(self):
+        domain = self.email.split("@")[1].lower()
+        org_from_email = domain.split(".")[0]
+        if self.organization_name.strip().lower() != org_from_email:
+            raise ValueError(
+                f"Organization must match email domain prefix: '{org_from_email}' for {self.email}"
+            )
+        self.organization_name = org_from_email
+        return self
 
 
 class LoginRequest(BaseModel):
@@ -55,7 +70,7 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
 
 
-# ── Projects ──────────────────────────────────────────────────────────────────
+
 
 class ProjectCreate(BaseModel):
     name: str
@@ -101,7 +116,7 @@ class UpdateMemberRole(BaseModel):
     role: ProjectRole
 
 
-# ── Tasks ──────────────────────────────────────────────────────────────────────
+
 
 class TaskCreate(BaseModel):
     title: str
@@ -137,7 +152,6 @@ class TaskResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
 
 class TaskStatusCount(BaseModel):
     status: TaskStatus

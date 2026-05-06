@@ -68,8 +68,14 @@ def get_dashboard(
         task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
  
 
+
+        # Manager dashboard should show only tasks allocated by this manager.
+        task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+ 
+
         # Manager dashboard shows only tasks allocated by this manager.
         task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+
 
 
     total_tasks: int = task_base_q.count()
