@@ -12,6 +12,8 @@ class SignupRequest(BaseModel):
     email: EmailStr
     full_name: str
     password: str
+    role: GlobalRole = GlobalRole.MEMBER
+    organization_name: str
 
     @field_validator("password")
     @classmethod
@@ -40,6 +42,7 @@ class UserPublic(BaseModel):
     id: int
     email: str
     full_name: str
+    organization_name: str
     role: GlobalRole
     is_active: bool
     created_at: datetime
@@ -139,9 +142,19 @@ class TaskStatusCount(BaseModel):
     count: int
 
 
+class MemberTaskCount(BaseModel):
+    """Task load per member for manager dashboard insights."""
+
+    user_id: int
+    full_name: str
+    task_count: int
+
+
 class DashboardResponse(BaseModel):
     total_projects: int
     total_tasks: int
     overdue_tasks: int
     tasks_by_status: List[TaskStatusCount]
     my_assigned_tasks: List[TaskResponse]
+    member_task_counts: List[MemberTaskCount]
+    managed_tasks: List[TaskResponse]
