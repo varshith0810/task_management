@@ -13,7 +13,11 @@ export default function SignupPage() {
 
   const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
 
+
+  const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
+
   const [form, setForm] = useState({ email: '', full_name: '', password: '', role: 'member' });
+
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,7 +77,11 @@ export default function SignupPage() {
 
             placeholder="Auto from email domain" required
 
+
+            placeholder="Auto from email domain" required
+
             placeholder="Acme Inc" required
+
 
           />
           <Input

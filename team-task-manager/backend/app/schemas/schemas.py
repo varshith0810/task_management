@@ -17,10 +17,6 @@ class SignupRequest(BaseModel):
     organization_name: str
 
 
-    organization_name: str
-
-
-
     @field_validator("password")
     @classmethod
     def strong_password(cls, v):
@@ -59,7 +55,11 @@ class UserPublic(BaseModel):
     id: int
     email: str
     full_name: str
+
+    organization_name: Optional[str] = None
+
     organization_name: str
+
     role: GlobalRole
     is_active: bool
     created_at: datetime
