@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr, field_validator
+from pydantic import BaseModel, EmailStr, field_validator, model_validator
 from app.models.models import GlobalRole, ProjectRole, TaskStatus, TaskPriority
 import re
 
@@ -12,6 +12,8 @@ class SignupRequest(BaseModel):
     email: EmailStr
     full_name: str
     password: str
+    role: GlobalRole = GlobalRole.MEMBER
+    organization_name: str
 
     @field_validator("password")
     @classmethod
@@ -19,6 +21,17 @@ class SignupRequest(BaseModel):
         if not re.match(r'^(?=.*[A-Z])(?=.*\d).{8,}$', v):
             raise ValueError("Password must be 8+ chars with at least one uppercase and one digit")
         return v
+
+    @model_validator(mode="after")
+    def organization_matches_email(self):
+        domain = self.email.split("@")[1].lower()
+        org_from_email = domain.split(".")[0]
+        if self.organization_name.strip().lower() != org_from_email:
+            raise ValueError(
+                f"Organization must match email domain prefix: '{org_from_email}' for {self.email}"
+            )
+        self.organization_name = org_from_email
+        return self
 
 
 class LoginRequest(BaseModel):
@@ -40,6 +53,7 @@ class UserPublic(BaseModel):
     id: int
     email: str
     full_name: str
+    organization_name: str
     role: GlobalRole
     is_active: bool
     created_at: datetime
@@ -139,9 +153,19 @@ class TaskStatusCount(BaseModel):
     count: int
 
 
+class MemberTaskCount(BaseModel):
+    """Task load per member for manager dashboard insights."""
+
+    user_id: int
+    full_name: str
+    task_count: int
+
+
 class DashboardResponse(BaseModel):
     total_projects: int
     total_tasks: int
     overdue_tasks: int
     tasks_by_status: List[TaskStatusCount]
     my_assigned_tasks: List[TaskResponse]
+    member_task_counts: List[MemberTaskCount]
+    managed_tasks: List[TaskResponse]
