@@ -7,7 +7,11 @@ import './Auth.css';
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
+
   const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
+
+  const [form, setForm] = useState({ email: '', full_name: '', password: '', role: 'member' });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 

@@ -13,7 +13,9 @@ class SignupRequest(BaseModel):
     full_name: str
     password: str
     role: GlobalRole = GlobalRole.MEMBER
+
     organization_name: str
+
 
     @field_validator("password")
     @classmethod
@@ -158,3 +160,4 @@ class DashboardResponse(BaseModel):
     my_assigned_tasks: List[TaskResponse]
     member_task_counts: List[MemberTaskCount]
     managed_tasks: List[TaskResponse]
+
