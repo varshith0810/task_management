@@ -57,10 +57,10 @@ def list_projects(
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 def create_project(
     payload: ProjectCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Create a project. The creator is automatically added as OWNER."""
+    """Create a project (admin only). The creator is automatically added as OWNER."""
     project = Project(**payload.model_dump())
     db.add(project)
     db.flush()  # get project.id before commit

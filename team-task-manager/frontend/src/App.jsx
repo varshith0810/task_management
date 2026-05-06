@@ -6,6 +6,7 @@ import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import MemberDashboardPage from './pages/MemberDashboardPage';
 import ProjectsPage from './pages/ProjectsPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
 import './components/ui.css';
@@ -22,6 +23,11 @@ function ProtectedRoute({ children }) {
   );
   if (!user) return <Navigate to="/login" replace />;
   return <Layout>{children}</Layout>;
+}
+
+function RoleHomeRedirect() {
+  const { user } = useAuth();
+  return <Navigate to={user?.role === 'admin' ? '/manager-dashboard' : '/member-dashboard'} replace />;
 }
 
 function ToastSetup() {
@@ -42,7 +48,9 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><RoleHomeRedirect /></ProtectedRoute>} />
+          <Route path="/manager-dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/member-dashboard" element={<ProtectedRoute><MemberDashboardPage /></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>} />
           <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

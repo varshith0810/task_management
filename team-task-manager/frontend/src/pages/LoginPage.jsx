@@ -18,8 +18,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await login(form);
-      navigate('/dashboard');
+      const me = await login(form);
+      navigate(me?.role === 'admin' ? '/manager-dashboard' : '/member-dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
