@@ -6,14 +6,20 @@ from app.models.models import GlobalRole, ProjectRole, TaskStatus, TaskPriority
 import re
 
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
+
 
 class SignupRequest(BaseModel):
     email: EmailStr
     full_name: str
     password: str
     role: GlobalRole = GlobalRole.MEMBER
+
     organization_name: str
+
+
+    organization_name: str
+
+
 
     @field_validator("password")
     @classmethod
@@ -64,7 +70,7 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
 
 
-# ── Projects ──────────────────────────────────────────────────────────────────
+
 
 class ProjectCreate(BaseModel):
     name: str
@@ -110,7 +116,7 @@ class UpdateMemberRole(BaseModel):
     role: ProjectRole
 
 
-# ── Tasks ──────────────────────────────────────────────────────────────────────
+
 
 class TaskCreate(BaseModel):
     title: str
@@ -146,7 +152,6 @@ class TaskResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Dashboard ─────────────────────────────────────────────────────────────────
 
 class TaskStatusCount(BaseModel):
     status: TaskStatus
@@ -169,3 +174,4 @@ class DashboardResponse(BaseModel):
     my_assigned_tasks: List[TaskResponse]
     member_task_counts: List[MemberTaskCount]
     managed_tasks: List[TaskResponse]
+

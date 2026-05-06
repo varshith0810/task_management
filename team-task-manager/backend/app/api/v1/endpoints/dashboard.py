@@ -1,21 +1,21 @@
 """
 /dashboard  – aggregated stats for the authenticated user.
 """
- 
+
 from datetime import datetime, timezone
- 
+
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, nullslast
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
- 
+
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
 from app.models.models import GlobalRole, Project, ProjectMember, ProjectRole, Task, TaskStatus, User
 from app.schemas.schemas import DashboardResponse, MemberTaskCount, TaskResponse, TaskStatusCount
- 
+
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
- 
- 
+
+
 @router.get("", response_model=DashboardResponse)
 def get_dashboard(
     current_user: User = Depends(get_current_user),
@@ -25,10 +25,10 @@ def get_dashboard(
 
     Admin/manager users are scoped to projects where they are OWNER or MANAGER.
     """
- 
+
     now = datetime.now(timezone.utc)
     is_admin = current_user.role == GlobalRole.ADMIN
- 
+
     # Base project queryset
     if is_admin:
         project_ids_q = (
@@ -46,11 +46,10 @@ def get_dashboard(
             .join(Project, Project.id == ProjectMember.project_id)
             .filter(ProjectMember.user_id == current_user.id, Project.is_active == True)
         )
- 
+
     project_ids = [r[0] for r in project_ids_q.all()]
- 
     total_projects = len(project_ids)
- 
+
     if not project_ids:
         return DashboardResponse(
             total_projects=0,
@@ -61,21 +60,31 @@ def get_dashboard(
             member_task_counts=[],
             managed_tasks=[],
         )
- 
+
     task_base_q = db.query(Task).filter(Task.project_id.in_(project_ids))
     if is_admin:
+
         # Manager dashboard should show only tasks allocated by this manager.
         task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
  
-    total_tasks: int = task_base_q.count()
+
+
+        # Manager dashboard should show only tasks allocated by this manager.
+        task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
  
-    # Overdue: past due_date and not terminal
+
+        # Manager dashboard shows only tasks allocated by this manager.
+        task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+
+
+
+    total_tasks: int = task_base_q.count()
+
     overdue_tasks: int = task_base_q.filter(
         Task.due_date < now,
         Task.status.notin_([TaskStatus.DONE, TaskStatus.CANCELLED]),
     ).count()
- 
-    # Tasks by status
+
     status_rows = (
         task_base_q
         .with_entities(Task.status, func.count(Task.id))
@@ -83,9 +92,7 @@ def get_dashboard(
         .all()
     )
     tasks_by_status = [TaskStatusCount(status=s, count=c) for s, c in status_rows]
- 
-    # My assigned tasks (across all my projects)
-    # nullslast() is the SA-idiomatic function — works on 1.4+ and 2.x.
+
     my_tasks_q = (
         db.query(Task)
         .options(joinedload(Task.assignee), joinedload(Task.creator))
@@ -94,10 +101,10 @@ def get_dashboard(
             Task.assignee_id == current_user.id,
             Task.status.notin_([TaskStatus.DONE, TaskStatus.CANCELLED]),
         )
-        .order_by(nullslast(Task.due_date.asc()))
+        .order_by(Task.due_date.is_(None), Task.due_date.asc())
         .limit(20)
     )
- 
+
     member_task_counts: list[MemberTaskCount] = []
     if is_admin:
         member_rows = (
@@ -135,4 +142,3 @@ def get_dashboard(
         member_task_counts=member_task_counts,
         managed_tasks=[TaskResponse.model_validate(t) for t in managed_tasks_q.all()],
     )
- 
