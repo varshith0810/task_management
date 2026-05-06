@@ -25,6 +25,7 @@ def get_dashboard(
 
     Admin/manager users are scoped to projects where they are OWNER or MANAGER.
     """
+
     now = datetime.now(timezone.utc)
     is_admin = current_user.role == GlobalRole.ADMIN
 
@@ -62,8 +63,14 @@ def get_dashboard(
 
     task_base_q = db.query(Task).filter(Task.project_id.in_(project_ids))
     if is_admin:
+
+        # Manager dashboard should show only tasks allocated by this manager.
+        task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+ 
+
         # Manager dashboard shows only tasks allocated by this manager.
         task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+
 
     total_tasks: int = task_base_q.count()
 

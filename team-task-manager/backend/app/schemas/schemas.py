@@ -14,6 +14,9 @@ class SignupRequest(BaseModel):
     password: str
     role: GlobalRole = GlobalRole.MEMBER
 
+    organization_name: str
+
+
     @field_validator("password")
     @classmethod
     def strong_password(cls, v):
@@ -41,6 +44,7 @@ class UserPublic(BaseModel):
     id: int
     email: str
     full_name: str
+    organization_name: str
     role: GlobalRole
     is_active: bool
     created_at: datetime
@@ -142,6 +146,7 @@ class TaskStatusCount(BaseModel):
 
 class MemberTaskCount(BaseModel):
     """Task load per member for manager dashboard insights."""
+
     user_id: int
     full_name: str
     task_count: int
