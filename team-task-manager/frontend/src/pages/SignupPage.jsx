@@ -7,7 +7,18 @@ import './Auth.css';
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
+
   const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
+
+
+  const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
+
+
+  const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
+
+  const [form, setForm] = useState({ email: '', full_name: '', password: '', role: 'member' });
+
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -63,7 +74,15 @@ export default function SignupPage() {
           <Input
             id="organization_name" label="Organization"
             value={form.organization_name} onChange={set('organization_name')}
+
             placeholder="Auto from email domain" required
+
+
+            placeholder="Auto from email domain" required
+
+            placeholder="Acme Inc" required
+
+
           />
           <Input
             id="password" label="Password" type="password"
