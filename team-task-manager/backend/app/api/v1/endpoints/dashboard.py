@@ -5,7 +5,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, nullslast
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.v1.deps import get_current_user
@@ -88,7 +88,7 @@ def get_dashboard(
             Task.assignee_id == current_user.id,
             Task.status.notin_([TaskStatus.DONE, TaskStatus.CANCELLED]),
         )
-        .order_by(nullslast(Task.due_date.asc()))
+        .order_by(Task.due_date.is_(None), Task.due_date.asc())
         .limit(20)
     )
 
