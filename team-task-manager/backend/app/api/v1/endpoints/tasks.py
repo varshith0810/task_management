@@ -76,11 +76,13 @@ def list_tasks(
 def create_task(
     payload: TaskCreate,
     current_user: User = Depends(get_current_user),
-    access=Depends(project_manager_dep),
+    access=Depends(project_member_dep),
     db: Session = Depends(get_db),
 ):
-    """Create a task (MANAGER+ or admin)."""
+    """Create a task (admin only)."""
     project, _ = access
+    if current_user.role != GlobalRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admin can assign/create tasks")
  
     if payload.assignee_id and current_user.role != GlobalRole.ADMIN:
         raise HTTPException(status_code=403, detail="Only admins can assign tasks")
@@ -132,10 +134,7 @@ def update_task(
     project, membership = access
     task = _load_task(task_id, project.id, db)
  
-    is_privileged = (
-        current_user.role == GlobalRole.ADMIN
-        or membership.role in (ProjectRole.OWNER, ProjectRole.MANAGER)
-    )
+    is_privileged = current_user.role == GlobalRole.ADMIN
  
     if not is_privileged:
         # Non-privileged users may only touch their own assigned tasks
@@ -175,17 +174,18 @@ def update_task(
 @router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(
     task_id: int,
-    access=Depends(project_manager_dep),
+    current_user: User = Depends(get_current_user),
+    access=Depends(project_member_dep),
     db: Session = Depends(get_db),
 ):
-    """Delete a task (MANAGER+ or admin)."""
+    """Delete a task (admin only)."""
     project, _ = access
+    if current_user.role != GlobalRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admin can delete tasks")
     task = _load_task(task_id, project.id, db)
     db.delete(task)
     db.commit()
  
-
-
 
 
 

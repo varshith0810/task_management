@@ -84,6 +84,8 @@ def create_project(
         selected_members = []
 
     project = Project(**data)
+    """Create a project (admin only). The creator is automatically added as OWNER."""
+    project = Project(**payload.model_dump())
     db.add(project)
     db.flush()  # get project.id before commit
  
