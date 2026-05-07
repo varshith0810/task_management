@@ -38,6 +38,7 @@ def organization_users(
             User.is_active == True,
             User.id != current_user.id,
             User.organization_name == current_user.organization_name,
+            (User.email.ilike(f"%{q}%") | User.full_name.ilike(f"%{q}%")),
         )
         .order_by(User.full_name.asc())
         .limit(200)

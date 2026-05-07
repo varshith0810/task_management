@@ -29,10 +29,12 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
     if db.query(User).filter_by(email=payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    org_from_email = payload.email.split("@")[1].lower().split(".")[0]
     user = User(
         email=payload.email,
         full_name=payload.full_name,
         organization_name=payload.organization_name,
+        organization_name=org_from_email,
         hashed_password=hash_password(payload.password),
         role=payload.role,
     )
