@@ -16,7 +16,13 @@ from app.db.session import get_db
 from app.models.models import GlobalRole, Project, ProjectMember, ProjectRole, Task, TaskStatus, User
 from app.schemas.schemas import DashboardResponse, MemberTaskCount, TaskResponse, TaskStatusCount
 
- 
+
+
+def _task_responses(tasks):
+    """Serialize task ORM rows for DashboardResponse payloads."""
+    return [TaskResponse.model_validate(task) for task in tasks]
+
+
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 logger = logging.getLogger(__name__)
 
@@ -145,6 +151,8 @@ def get_dashboard(
     )
     if is_admin:
         managed_tasks_q = managed_tasks_q.filter(Task.creator_id == current_user.id)
+    my_assigned_tasks = _task_responses(my_tasks_q.all())
+    managed_tasks = _task_responses(managed_tasks_q.all())
 
 
     try:
@@ -155,11 +163,16 @@ def get_dashboard(
         raise
 
 
+
     return DashboardResponse(
         total_projects=total_projects,
         total_tasks=total_tasks,
         overdue_tasks=overdue_tasks,
         tasks_by_status=tasks_by_status,
+        my_assigned_tasks=my_assigned_tasks,
+        member_task_counts=member_task_counts,
+        managed_tasks=managed_tasks,
+
 
         my_assigned_tasks=my_assigned_tasks,
         member_task_counts=member_task_counts,
@@ -168,5 +181,6 @@ def get_dashboard(
         my_assigned_tasks=[TaskResponse.model_validate(t) for t in my_tasks_q.all()],
         member_task_counts=member_task_counts,
         managed_tasks=[TaskResponse.model_validate(t) for t in managed_tasks_q.all()],
+
 
     )

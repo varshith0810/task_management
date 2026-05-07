@@ -2,24 +2,18 @@
 seed.py – populate the database with a default admin user and sample data.
 Run once after migrations: python seed.py
 """
- 
 import sys
 import os
- 
 # Ensure the app package is importable when running as `python seed.py` from /app
 sys.path.insert(0, os.path.dirname(__file__))
- 
 from app.db.migrations import ensure_user_organization_column
 from app.db.session import Base, engine, SessionLocal
 from app.models.models import GlobalRole, Project, ProjectMember, ProjectRole, Task, TaskPriority, TaskStatus, User
-from app.core.security import hash_password
- 
+from app.core.security import hash_password 
 DEFAULT_PASSWORD = "Admin1234!"  # Change via env var in production
 ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL", "admin@taskmanager.com")
 ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD", DEFAULT_PASSWORD)
 DEFAULT_ORGANIZATION = os.getenv("SEED_ORGANIZATION_NAME", "TaskFlow")
- 
- 
 def seed():
     Base.metadata.create_all(bind=engine)
     ensure_user_organization_column(engine)
@@ -50,9 +44,7 @@ def seed():
             member = User(
                 email=member_email,
                 full_name="Sample Member",
-
                 organization_name=DEFAULT_ORGANIZATION,
-
                 hashed_password=hash_password(ADMIN_PASSWORD),
                 role=GlobalRole.MEMBER,
             )

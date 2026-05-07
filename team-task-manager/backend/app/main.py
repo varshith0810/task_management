@@ -1,20 +1,13 @@
 """
 Team Task Manager – FastAPI application factory.
 """
- 
 from contextlib import asynccontextmanager
 from pathlib import Path
- 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-
-
-
 from sqlalchemy import inspect, text
- 
-
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.db.migrations import ensure_user_organization_column
@@ -23,7 +16,6 @@ from app.db.session import Base, engine
 # Static files are copied to /app/static inside the container
 STATIC_DIR = Path("/app/static")
  
-
  
 def ensure_user_organization_column():
     """Lightweight migration for deployments that already have a users table."""
@@ -38,16 +30,11 @@ def ensure_user_organization_column():
             ))
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     ensure_user_organization_column(engine)
-    ensure_user_organization_column()
-
     yield
- 
- 
 def create_app() -> FastAPI:
     app = FastAPI(
         title=settings.APP_NAME,
