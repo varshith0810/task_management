@@ -28,6 +28,7 @@ def seed():
             admin = User(
                 email=ADMIN_EMAIL,
                 full_name="Admin User",
+                organization_name="TaskFlow",
                 hashed_password=hash_password(ADMIN_PASSWORD),
                 role=GlobalRole.ADMIN,
             )
@@ -44,6 +45,7 @@ def seed():
             member = User(
                 email=member_email,
                 full_name="Sample Member",
+                organization_name="TaskFlow",
                 hashed_password=hash_password(ADMIN_PASSWORD),
                 role=GlobalRole.MEMBER,
             )

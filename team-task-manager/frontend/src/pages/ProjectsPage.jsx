@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { projects } from '../api/client';
+import { useNavigate } from 'react-router-dom';
+import { projects, users } from '../api/client';
+import { useAuth } from '../context/AuthContext';
 import { Button, Modal, Input, Textarea, ConfirmModal, Empty, toast } from '../components/ui';
 import './Projects.css';
 
@@ -12,10 +13,13 @@ export default function ProjectsPage() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '' });
+  const [form, setForm] = useState({ name: '', description: '', member_ids: [] });
+  const [employees, setEmployees] = useState([]);
   const [saving, setSaving] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   const load = () => {
     setLoading(true);
@@ -27,6 +31,14 @@ export default function ProjectsPage() {
 
   useEffect(load, []);
 
+  useEffect(() => {
+    if (creating && isAdmin) {
+      users.organization()
+        .then(setEmployees)
+        .catch(e => toast(e.message, 'error'));
+    }
+  }, [creating, isAdmin]);
+
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
@@ -35,7 +47,7 @@ export default function ProjectsPage() {
       const p = await projects.create(form);
       toast('Project created!');
       setCreating(false);
-      setForm({ name: '', description: '' });
+      setForm({ name: '', description: '', member_ids: [] });
       navigate(`/projects/${p.id}`);
     } catch (err) {
       toast(err.message, 'error');
@@ -61,7 +73,7 @@ export default function ProjectsPage() {
           <div className="page-title">Projects</div>
           <div className="page-subtitle">{list.length} active project{list.length !== 1 ? 's' : ''}</div>
         </div>
-        <Button onClick={() => setCreating(true)}>+ New Project</Button>
+        {isAdmin && <Button onClick={() => setCreating(true)}>+ New Project</Button>}
       </div>
 
       {loading ? (
@@ -73,7 +85,7 @@ export default function ProjectsPage() {
           icon="⬡"
           title="No projects yet"
           desc="Create your first project to start organizing work."
-          action={<Button onClick={() => setCreating(true)}>Create project</Button>}
+          action={isAdmin ? <Button onClick={() => setCreating(true)}>Create project</Button> : null}
         />
       ) : (
         <div className="projects-grid">
@@ -81,11 +93,11 @@ export default function ProjectsPage() {
             <div key={p.id} className="project-card" onClick={() => navigate(`/projects/${p.id}`)}>
               <div className="project-card-top">
                 <div className="project-card-name">{p.name}</div>
-                <button
+                {isAdmin && <button
                   className="project-delete-btn"
                   onClick={e => { e.stopPropagation(); setDeleteId(p.id); }}
                   title="Archive project"
-                >✕</button>
+                >✕</button>}
               </div>
               {p.description && <div className="project-card-desc">{p.description}</div>}
               <div className="project-card-footer">
@@ -110,6 +122,32 @@ export default function ProjectsPage() {
             value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder="What's this project about?"
           />
+          <div className="project-employee-picker">
+            <div>
+              <div className="input-label">Employees in {user?.organization_name || 'your organization'}</div>
+              <div className="project-employee-help">Select employees to add to this project when it is created.</div>
+            </div>
+            {!employees.length ? (
+              <div className="project-employee-empty">No other employees found in your organization.</div>
+            ) : employees.map(employee => (
+              <label key={employee.id} className="project-employee-option">
+                <input
+                  type="checkbox"
+                  checked={form.member_ids.includes(employee.id)}
+                  onChange={e => setForm(f => ({
+                    ...f,
+                    member_ids: e.target.checked
+                      ? [...f.member_ids, employee.id]
+                      : f.member_ids.filter(id => id !== employee.id),
+                  }))}
+                />
+                <span>
+                  <strong>{employee.full_name}</strong>
+                  <small>{employee.email}</small>
+                </span>
+              </label>
+            ))}
+          </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
             <Button variant="ghost" onClick={() => setCreating(false)} type="button">Cancel</Button>
             <Button type="submit" loading={saving}>Create Project</Button>
