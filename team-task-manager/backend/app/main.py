@@ -17,7 +17,7 @@ from app.db.session import Base, engine
 STATIC_DIR = Path("/app/static")
  
  
-def ensure_user_organization_column():
+def ensure_user_organization_column(engine):
     """Lightweight migration for deployments that already have a users table."""
     inspector = inspect(engine)
     if "users" not in inspector.get_table_names():
