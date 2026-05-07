@@ -169,15 +169,6 @@ def get_dashboard(
         total_tasks=total_tasks,
         overdue_tasks=overdue_tasks,
         tasks_by_status=tasks_by_status,
-        my_assigned_tasks=my_assigned_tasks,
-        member_task_counts=member_task_counts,
-        managed_tasks=managed_tasks,
-
-
-        my_assigned_tasks=my_assigned_tasks,
-        member_task_counts=member_task_counts,
-        managed_tasks=managed_tasks,
-
         my_assigned_tasks=[TaskResponse.model_validate(t) for t in my_tasks_q.all()],
         member_task_counts=member_task_counts,
         managed_tasks=[TaskResponse.model_validate(t) for t in managed_tasks_q.all()],
