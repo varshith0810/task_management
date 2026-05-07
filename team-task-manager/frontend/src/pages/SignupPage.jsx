@@ -4,21 +4,57 @@ import { useAuth } from '../context/AuthContext';
 import { Button, Input } from '../components/ui';
 import './Auth.css';
 
+const INITIAL_SIGNUP_FORM = {
+  full_name: '',
+  organization_name: '',
+  email: '',
+  password: '',
+  role: 'member',
+};
+
+function organizationFromEmail(email) {
+  const domain = email.includes('@') ? email.split('@')[1] : '';
+  const organization = domain ? domain.split('.')[0] : '';
+  return organization ? organization.charAt(0).toUpperCase() + organization.slice(1) : '';
+}
+
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', full_name: '', password: '', role: 'member' });
+  const [accountForm, setAccountForm] = useState(INITIAL_SIGNUP_FORM);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const updateField = (field) => (event) => {
+    const value = event.target.value;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    setAccountForm(current => {
+      if (field !== 'email') {
+        return { ...current, [field]: value };
+      }
+
+      const guessedOrganization = organizationFromEmail(value);
+      const previousGuessedOrganization = organizationFromEmail(current.email);
+      const shouldAutoFillOrganization =
+        !current.organization_name || current.organization_name === previousGuessedOrganization;
+
+      return {
+        ...current,
+        email: value,
+        organization_name: shouldAutoFillOrganization
+          ? guessedOrganization
+          : current.organization_name,
+      };
+    });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
+
     try {
-      const me = await signup(form);
+      const me = await signup(accountForm);
       navigate(me?.role === 'admin' ? '/manager-dashboard' : '/member-dashboard');
     } catch (err) {
       setError(err.message);
@@ -44,25 +80,48 @@ export default function SignupPage() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <Input
-            id="full_name" label="Full name"
-            value={form.full_name} onChange={set('full_name')}
-            placeholder="Jane Smith" required
+            id="full_name"
+            label="Full name"
+            value={accountForm.full_name}
+            onChange={updateField('full_name')}
+            placeholder="Jane Smith"
+            required
           />
           <Input
-            id="email" label="Email" type="email"
-            value={form.email} onChange={set('email')}
-            placeholder="you@company.com" required
+            id="email"
+            label="Email"
+            type="email"
+            value={accountForm.email}
+            onChange={updateField('email')}
+            placeholder="you@company.com"
+            required
           />
           <Input
-            id="password" label="Password" type="password"
-            value={form.password} onChange={set('password')}
+            id="organization_name"
+            label="Organization name"
+            value={accountForm.organization_name}
+            onChange={updateField('organization_name')}
+            placeholder="Acme Corp"
+            required
+          />
+          <Input
+            id="password"
+            label="Password"
+            type="password"
+            value={accountForm.password}
+            onChange={updateField('password')}
             placeholder="Min 8 chars, include number + capital"
             required
           />
           <div className="input-wrap">
             <label htmlFor="role" className="input-label">Account type</label>
-            <select id="role" className="input" value={form.role} onChange={set('role')}>
-              <option value="admin">Manager</option>
+            <select
+              id="role"
+              className="input"
+              value={accountForm.role}
+              onChange={updateField('role')}
+            >
+              <option value="admin">Admin</option>
               <option value="member">Member</option>
             </select>
           </div>
