@@ -4,20 +4,25 @@ import { useAuth } from '../context/AuthContext';
 import { Button, Input } from '../components/ui';
 import './Auth.css';
 
+const INITIAL_SIGNUP_FORM = {
+  email: '',
+  full_name: '',
+  organization_name: '',
+  password: '',
+  role: 'member',
+};
+
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
+  const [form, setForm] = useState(INITIAL_SIGNUP_FORM);
 
 
   const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
 
 
-  const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
-
-  const [form, setForm] = useState({ email: '', full_name: '', password: '', role: 'member' });
-
+  
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,6 +72,11 @@ export default function SignupPage() {
             placeholder="Jane Smith" required
           />
           <Input
+            id="organization_name" label="Organization name"
+            value={form.organization_name} onChange={set('organization_name')}
+            placeholder="Acme Corp" required
+          />
+          <Input
             id="email" label="Email" type="email"
             value={form.email} onChange={set('email')}
             placeholder="you@company.com" required
@@ -93,7 +103,7 @@ export default function SignupPage() {
           <div className="input-wrap">
             <label htmlFor="role" className="input-label">Account type</label>
             <select id="role" className="input" value={form.role} onChange={set('role')}>
-              <option value="admin">Manager</option>
+              <option value="admin">Admin</option>
               <option value="member">Member</option>
             </select>
           </div>

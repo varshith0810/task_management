@@ -4,7 +4,7 @@
 Role matrix
 -----------
 List projects    : any authenticated user (sees own projects; admin sees all)
-Create project   : any authenticated user (becomes OWNER automatically)
+Create project   : admin only (can add employees from the same organization)
 Get project      : project member OR admin
 Update project   : OWNER / MANAGER / admin
 Delete project   : OWNER / admin
@@ -60,8 +60,34 @@ def create_project(
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
+    """Create a project. Admin can select employees from their organization."""
+    data = payload.model_dump(exclude={"member_ids"})
+    selected_member_ids = set(payload.member_ids)
+    selected_member_ids.discard(current_user.id)
+
+    if selected_member_ids:
+        selected_members = (
+            db.query(User)
+            .filter(
+                User.id.in_(selected_member_ids),
+                User.is_active == True,
+                User.organization_name == current_user.organization_name,
+            )
+            .all()
+        )
+        if len(selected_members) != len(selected_member_ids):
+            raise HTTPException(
+                status_code=400,
+                detail="Selected employees must be active users in your organization",
+            )
+    else:
+        selected_members = []
+
+    project = Project(**data)
+
     """Create a project (admin only). The creator is automatically added as OWNER."""
     project = Project(**payload.model_dump())
+
     db.add(project)
     db.flush()  # get project.id before commit
  
@@ -71,6 +97,14 @@ def create_project(
         role=ProjectRole.OWNER,
     )
     db.add(membership)
+
+    for member in selected_members:
+        db.add(ProjectMember(
+            project_id=project.id,
+            user_id=member.id,
+            role=ProjectRole.MEMBER,
+        ))
+
     db.commit()
     db.refresh(project)
     return project
@@ -140,16 +174,20 @@ def list_members(
 @router.post("/{project_id}/members", response_model=MemberInProject, status_code=status.HTTP_201_CREATED)
 def add_member(
     payload: AddMemberRequest,
+    current_user: User = Depends(get_current_user),
     access=Depends(project_manager_dep),
     db: Session = Depends(get_db),
 ):
     """Add a user to the project (MANAGER+ or admin)."""
     project, _ = access
- 
+
     target_user = db.get(User, payload.user_id)
     if not target_user or not target_user.is_active:
         raise HTTPException(status_code=404, detail="Target user not found")
  
+    if current_user and target_user.organization_name != current_user.organization_name:
+        raise HTTPException(status_code=400, detail="Target user must be in your organization")
+
     existing = db.query(ProjectMember).filter_by(project_id=project.id, user_id=payload.user_id).first()
     if existing:
         raise HTTPException(status_code=409, detail="User is already a member")

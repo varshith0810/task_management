@@ -4,8 +4,8 @@
 Role matrix
 -----------
 List / Get tasks  : project member (any role)
-Create task       : MANAGER+ or admin
-Update task       : assignee can update status only; MANAGER+ can update all fields
+Create task       : MANAGER+ or admin (only admin may assign)
+Update task       : assignee can update status only; MANAGER+ can update all fields except assignment (admin only)
 Delete task       : MANAGER+ or admin
 """
  
@@ -84,6 +84,9 @@ def create_task(
     if current_user.role != GlobalRole.ADMIN:
         raise HTTPException(status_code=403, detail="Only admin can assign/create tasks")
  
+    if payload.assignee_id and current_user.role != GlobalRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can assign tasks")
+
     # Validate assignee belongs to this project
     if payload.assignee_id:
         assignee_membership = (
@@ -148,6 +151,9 @@ def update_task(
     else:
         updates = payload.model_dump(exclude_none=True)
  
+    if "assignee_id" in updates and updates["assignee_id"] != task.assignee_id and current_user.role != GlobalRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Only admins can assign tasks")
+
     # Validate new assignee is a project member
     if "assignee_id" in updates and updates["assignee_id"] is not None:
         assignee_membership = (

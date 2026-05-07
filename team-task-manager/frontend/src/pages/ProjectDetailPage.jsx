@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { projects, tasks } from '../api/client';
+import { projects, tasks, users } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import {
   Button, Modal, Input, Textarea, Select, ConfirmModal,
@@ -16,7 +16,7 @@ const PRIORITIES = ['low','medium','high','critical'];
 const ROLES = ['member','manager','owner'];
 
 // ── Task Form ─────────────────────────────────────────────────────────────────
-function TaskForm({ projectId, members, task, onSave, onClose, canManage }) {
+function TaskForm({ projectId, members, task, onSave, onClose, canManage, canAssign }) {
   const [form, setForm] = useState({
     title: task?.title || '',
     description: task?.description || '',
@@ -34,14 +34,14 @@ function TaskForm({ projectId, members, task, onSave, onClose, canManage }) {
     try {
       const payload = {
         ...form,
-        assignee_id: form.assignee_id ? Number(form.assignee_id) : null,
+        assignee_id: canAssign && form.assignee_id ? Number(form.assignee_id) : null,
         due_date: form.due_date ? `${form.due_date}T00:00:00Z` : null,
       };
       if (!task) {
-        await tasks.create(projectId, payload);
+        await tasks.create(projectId, canAssign ? payload : { ...payload, assignee_id: null });
         toast('Task created!');
       } else {
-        const updates = canManage ? payload : { status: payload.status };
+        const updates = canManage ? (canAssign ? payload : { ...payload, assignee_id: task?.assignee_id || null }) : { status: payload.status };
         await tasks.update(projectId, task.id, updates);
         toast('Task updated!');
       }
@@ -69,10 +69,12 @@ function TaskForm({ projectId, members, task, onSave, onClose, canManage }) {
               <Select id="priority" label="Priority" value={form.priority} onChange={set('priority')}>
                 {PRIORITIES.map(p => <option key={p} value={p}>{p.charAt(0).toUpperCase()+p.slice(1)}</option>)}
               </Select>
-              <Select id="assignee" label="Assignee" value={form.assignee_id} onChange={set('assignee_id')}>
-                <option value="">Unassigned</option>
-                {members.map(m => <option key={m.user.id} value={m.user.id}>{m.user.full_name}</option>)}
-              </Select>
+              {canAssign && (
+                <Select id="assignee" label="Assignee" value={form.assignee_id} onChange={set('assignee_id')}>
+                  <option value="">Unassigned</option>
+                  {members.map(m => <option key={m.user.id} value={m.user.id}>{m.user.full_name}</option>)}
+                </Select>
+              )}
               <Input id="due-date" label="Due date" type="date" value={form.due_date} onChange={set('due_date')} />
             </>
           )}
@@ -90,13 +92,23 @@ function TaskForm({ projectId, members, task, onSave, onClose, canManage }) {
 }
 
 // ── Add Member Form ───────────────────────────────────────────────────────────
-function AddMemberForm({ projectId, onSave, onClose }) {
+function AddMemberForm({ projectId, existingMembers, onSave, onClose }) {
   const [form, setForm] = useState({ user_id: '', role: 'member' });
+  const [employees, setEmployees] = useState([]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    users.organization()
+      .then(data => {
+        const existingIds = new Set(existingMembers.map(m => m.user?.id));
+        setEmployees(data.filter(employee => !existingIds.has(employee.id)));
+      })
+      .catch(e => toast(e.message, 'error'));
+  }, [existingMembers]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.user_id) { toast('Enter a user ID', 'error'); return; }
+    if (!form.user_id) { toast('Select an employee', 'error'); return; }
     setSaving(true);
     try {
       await projects.addMember(projectId, { user_id: Number(form.user_id), role: form.role });
@@ -112,8 +124,13 @@ function AddMemberForm({ projectId, onSave, onClose }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <Input id="uid" label="User ID" type="number" value={form.user_id}
-        onChange={e => setForm(f => ({ ...f, user_id: e.target.value }))} placeholder="Enter user's ID" required autoFocus />
+      <Select id="uid" label="Employee" value={form.user_id}
+        onChange={e => setForm(f => ({ ...f, user_id: e.target.value }))} required>
+        <option value="">Select an employee</option>
+        {employees.map(employee => (
+          <option key={employee.id} value={employee.id}>{employee.full_name} — {employee.email}</option>
+        ))}
+      </Select>
       <Select id="role" label="Role" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
         {ROLES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase()+r.slice(1)}</option>)}
       </Select>
@@ -144,6 +161,7 @@ export default function ProjectDetailPage() {
 
   const myMembership = memberList.find(m => m.user?.id === user?.id);
   const canManage = user?.role === 'admin' || ['owner','manager'].includes(myMembership?.role);
+  const canAssign = user?.role === 'admin';
   const isOwner = user?.role === 'admin' || myMembership?.role === 'owner';
 
   const load = useCallback(async () => {
@@ -198,7 +216,7 @@ export default function ProjectDetailPage() {
           {tab === 'tasks' && canManage && (
             <Button onClick={() => setTaskModal('new')}>+ New Task</Button>
           )}
-          {tab === 'members' && isOwner && (
+          {tab === 'members' && canAssign && (
             <Button onClick={() => setAddMember(true)}>+ Add Member</Button>
           )}
         </div>
@@ -290,12 +308,13 @@ export default function ProjectDetailPage() {
             onSave={reloadTasks}
             onClose={() => setTaskModal(null)}
             canManage={canManage}
+            canAssign={canAssign}
           />
         )}
       </Modal>
 
       <Modal open={addMember} onClose={() => setAddMember(false)} title="Add Member">
-        <AddMemberForm projectId={id} onSave={reloadMembers} onClose={() => setAddMember(false)} />
+        <AddMemberForm projectId={id} existingMembers={memberList} onSave={reloadMembers} onClose={() => setAddMember(false)} />
       </Modal>
 
       <ConfirmModal open={!!deleteTask} onClose={() => setDeleteTask(null)}

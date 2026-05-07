@@ -1,7 +1,9 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, EmailStr, field_validator, model_validator
+
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
 from app.models.models import GlobalRole, ProjectRole, TaskStatus, TaskPriority
 import re
 
@@ -11,10 +13,21 @@ import re
 class SignupRequest(BaseModel):
     email: EmailStr
     full_name: str
+    organization_name: str
     password: str
     role: GlobalRole = GlobalRole.MEMBER
 
+
+    @field_validator("organization_name")
+    @classmethod
+    def organization_required(cls, v):
+        value = v.strip()
+        if not value:
+            raise ValueError("Organization name is required")
+        return value
+
     organization_name: str
+
 
 
     @field_validator("password")
@@ -56,9 +69,11 @@ class UserPublic(BaseModel):
     email: str
     full_name: str
 
+
     organization_name: Optional[str] = None
 
     organization_name: str
+
 
     role: GlobalRole
     is_active: bool
@@ -75,6 +90,7 @@ class UserUpdate(BaseModel):
 class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
+    member_ids: List[int] = Field(default_factory=list)
 
 
 class ProjectUpdate(BaseModel):
