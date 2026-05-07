@@ -50,7 +50,9 @@ def seed():
             member = User(
                 email=member_email,
                 full_name="Sample Member",
+
                 organization_name=DEFAULT_ORGANIZATION,
+
                 hashed_password=hash_password(ADMIN_PASSWORD),
                 role=GlobalRole.MEMBER,
             )
