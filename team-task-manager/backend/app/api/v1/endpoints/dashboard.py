@@ -4,8 +4,11 @@
 
 from datetime import datetime, timezone
 
+import logging
+
+
 from fastapi import APIRouter, Depends
-from sqlalchemy import func, nullslast
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.api.v1.deps import get_current_user
@@ -13,8 +16,12 @@ from app.db.session import get_db
 from app.models.models import GlobalRole, Project, ProjectMember, ProjectRole, Task, TaskStatus, User
 from app.schemas.schemas import DashboardResponse, MemberTaskCount, TaskResponse, TaskStatusCount
 
+ 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+logger = logging.getLogger(__name__)
 
+
+router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 @router.get("", response_model=DashboardResponse)
 def get_dashboard(
@@ -25,6 +32,7 @@ def get_dashboard(
 
     Admin/manager users are scoped to projects where they are OWNER or MANAGER.
     """
+
     now = datetime.now(timezone.utc)
     is_admin = current_user.role == GlobalRole.ADMIN
 
@@ -62,8 +70,26 @@ def get_dashboard(
 
     task_base_q = db.query(Task).filter(Task.project_id.in_(project_ids))
     if is_admin:
+
+        # Manager dashboard should show only tasks allocated by this manager.
+        task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+ 
+
+
+        # Manager dashboard should show only tasks allocated by this manager.
+        task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+ 
+
+
+        # Manager dashboard should show only tasks allocated by this manager.
+        task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+ 
+
         # Manager dashboard shows only tasks allocated by this manager.
         task_base_q = task_base_q.filter(Task.creator_id == current_user.id)
+
+
+
 
     total_tasks: int = task_base_q.count()
 
@@ -88,7 +114,7 @@ def get_dashboard(
             Task.assignee_id == current_user.id,
             Task.status.notin_([TaskStatus.DONE, TaskStatus.CANCELLED]),
         )
-        .order_by(nullslast(Task.due_date.asc()))
+        .order_by(Task.due_date.is_(None), Task.due_date.asc())
         .limit(20)
     )
 
@@ -120,12 +146,27 @@ def get_dashboard(
     if is_admin:
         managed_tasks_q = managed_tasks_q.filter(Task.creator_id == current_user.id)
 
+
+    try:
+        my_assigned_tasks = [TaskResponse.model_validate(t) for t in my_tasks_q.all()]
+        managed_tasks = [TaskResponse.model_validate(t) for t in managed_tasks_q.all()]
+    except Exception as exc:
+        logger.exception("Dashboard task serialization failed: %s", exc)
+        raise
+
+
     return DashboardResponse(
         total_projects=total_projects,
         total_tasks=total_tasks,
         overdue_tasks=overdue_tasks,
         tasks_by_status=tasks_by_status,
+
+        my_assigned_tasks=my_assigned_tasks,
+        member_task_counts=member_task_counts,
+        managed_tasks=managed_tasks,
+
         my_assigned_tasks=[TaskResponse.model_validate(t) for t in my_tasks_q.all()],
         member_task_counts=member_task_counts,
         managed_tasks=[TaskResponse.model_validate(t) for t in managed_tasks_q.all()],
+
     )
