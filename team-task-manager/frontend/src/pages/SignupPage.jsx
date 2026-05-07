@@ -4,21 +4,31 @@ import { useAuth } from '../context/AuthContext';
 import { Button, Input } from '../components/ui';
 import './Auth.css';
 
+const INITIAL_SIGNUP_FORM = {
+  email: '',
+  full_name: '',
+  organization_name: '',
+  password: '',
+  role: 'member',
+};
+
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: '', full_name: '', password: '', role: 'member' });
+  const [signupForm, setSignupForm] = useState(INITIAL_SIGNUP_FORM);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const updateSignupField = (field) => (event) => {
+    setSignupForm(current => ({ ...current, [field]: event.target.value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const me = await signup(form);
+      const me = await signup(signupForm);
       navigate(me?.role === 'admin' ? '/manager-dashboard' : '/member-dashboard');
     } catch (err) {
       setError(err.message);
@@ -45,24 +55,29 @@ export default function SignupPage() {
         <form onSubmit={handleSubmit} className="auth-form">
           <Input
             id="full_name" label="Full name"
-            value={form.full_name} onChange={set('full_name')}
+            value={signupForm.full_name} onChange={updateSignupField('full_name')}
             placeholder="Jane Smith" required
           />
           <Input
+            id="organization_name" label="Organization name"
+            value={signupForm.organization_name} onChange={updateSignupField('organization_name')}
+            placeholder="Acme Corp" required
+          />
+          <Input
             id="email" label="Email" type="email"
-            value={form.email} onChange={set('email')}
+            value={signupForm.email} onChange={updateSignupField('email')}
             placeholder="you@company.com" required
           />
           <Input
             id="password" label="Password" type="password"
-            value={form.password} onChange={set('password')}
+            value={signupForm.password} onChange={updateSignupField('password')}
             placeholder="Min 8 chars, include number + capital"
             required
           />
           <div className="input-wrap">
             <label htmlFor="role" className="input-label">Account type</label>
-            <select id="role" className="input" value={form.role} onChange={set('role')}>
-              <option value="admin">Manager</option>
+            <select id="role" className="input" value={signupForm.role} onChange={updateSignupField('role')}>
+              <option value="admin">Admin</option>
               <option value="member">Member</option>
             </select>
           </div>

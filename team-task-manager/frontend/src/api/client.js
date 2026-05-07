@@ -74,6 +74,12 @@ export const auth = {
   },
 };
 
+// Users
+export const users = {
+  search: (q = '') => request(`/users/search?q=${encodeURIComponent(q)}`),
+  organization: () => request('/users/organization'),
+};
+
 // Projects
 export const projects = {
   list: (skip = 0, limit = 50) => request(`/projects?skip=${skip}&limit=${limit}`),
