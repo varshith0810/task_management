@@ -67,7 +67,11 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     full_name: Mapped[str] = mapped_column(String(128), nullable=False)
+
+
     organization_name: Mapped[str] = mapped_column(String(128), nullable=False, default="")
+
+
     hashed_password: Mapped[str] = mapped_column(String(256), nullable=False)
     role: Mapped[GlobalRole] = mapped_column(
         Enum(GlobalRole), default=GlobalRole.MEMBER, nullable=False
