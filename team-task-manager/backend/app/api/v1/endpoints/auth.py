@@ -34,12 +34,7 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
         email=payload.email,
         full_name=payload.full_name,
         organization_name=payload.organization_name,
-
-
         organization_name=org_from_email,
-
-
-
         hashed_password=hash_password(payload.password),
         role=payload.role,
     )

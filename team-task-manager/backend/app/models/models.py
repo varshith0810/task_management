@@ -10,21 +10,15 @@ tasks            – belong to a project, optionally assigned to a user
 """
 
 from __future__ import annotations
-
 import enum
 from datetime import datetime, timezone
-
 from sqlalchemy import (
     Boolean, DateTime, Enum, ForeignKey,
     Integer, String, Text, UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from app.db.session import Base
-
-
 # ── Enums ─────────────────────────────────────────────────────────────────────
-
 class GlobalRole(str, enum.Enum):
     """Platform-wide role stored on the User row."""
     ADMIN = "admin"    # can manage all projects & users
@@ -66,12 +60,8 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
-
-
+    full_name: Mapped[str] = mapped_column(String(128), nullable=False)
     organization_name: Mapped[str] = mapped_column(String(128), nullable=False, default="")
-
-
-
     hashed_password: Mapped[str] = mapped_column(String(256), nullable=False)
     role: Mapped[GlobalRole] = mapped_column(
         Enum(GlobalRole), default=GlobalRole.MEMBER, nullable=False
@@ -104,7 +94,6 @@ class Project(Base):
 class ProjectMember(Base):
     __tablename__ = "project_members"
     __table_args__ = (UniqueConstraint("project_id", "user_id", name="uq_project_user"),)
-
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
@@ -131,11 +120,9 @@ class Task(Base):
         Enum(TaskPriority), default=TaskPriority.MEDIUM, nullable=False
     )
     due_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE"), nullable=False, index=True)
     creator_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     assignee_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
 

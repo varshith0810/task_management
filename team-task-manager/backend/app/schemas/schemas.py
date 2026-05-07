@@ -18,16 +18,13 @@ class SignupRequest(BaseModel):
         if not value:
             raise ValueError("Organization name is required")
         return value
-
     organization_name: str
-
     @field_validator("password")
     @classmethod
     def strong_password(cls, v):
         if not re.match(r'^(?=.*[A-Z])(?=.*\d).{8,}$', v):
             raise ValueError("Password must be 8+ chars with at least one uppercase and one digit")
         return v
-
     @model_validator(mode="after")
     def organization_matches_email(self):
         domain = self.email.split("@")[1].lower()
@@ -38,23 +35,15 @@ class SignupRequest(BaseModel):
             )
         self.organization_name = org_from_email
         return self
-
-
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
-
-
 class RefreshRequest(BaseModel):
     refresh_token: str
-
-
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-
-
 class UserPublic(BaseModel):
     id: int
     email: str
@@ -65,25 +54,15 @@ class UserPublic(BaseModel):
     is_active: bool
     created_at: datetime
     model_config = {"from_attributes": True}
-
-
 class UserUpdate(BaseModel):
     full_name: Optional[str] = None
-
-
-
-
 class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
     member_ids: List[int] = Field(default_factory=list)
-
-
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
-
-
 class ProjectResponse(BaseModel):
     id: int
     name: str
@@ -92,8 +71,6 @@ class ProjectResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     model_config = {"from_attributes": True}
-
-
 class MemberInProject(BaseModel):
     id: int
     user_id: int
@@ -102,32 +79,20 @@ class MemberInProject(BaseModel):
     joined_at: datetime
     user: Optional[UserPublic] = None
     model_config = {"from_attributes": True}
-
-
 class ProjectDetail(ProjectResponse):
     members: List[MemberInProject] = []
     task_count: int = 0
-
-
 class AddMemberRequest(BaseModel):
     user_id: int
     role: ProjectRole = ProjectRole.MEMBER
-
-
 class UpdateMemberRole(BaseModel):
     role: ProjectRole
-
-
-
-
 class TaskCreate(BaseModel):
     title: str
     description: Optional[str] = None
     priority: TaskPriority = TaskPriority.MEDIUM
     due_date: Optional[datetime] = None
     assignee_id: Optional[int] = None
-
-
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -135,8 +100,6 @@ class TaskUpdate(BaseModel):
     priority: Optional[TaskPriority] = None
     due_date: Optional[datetime] = None
     assignee_id: Optional[int] = None
-
-
 class TaskResponse(BaseModel):
     id: int
     title: str
@@ -152,22 +115,14 @@ class TaskResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     model_config = {"from_attributes": True}
-
-
-
 class TaskStatusCount(BaseModel):
     status: TaskStatus
     count: int
-
-
 class MemberTaskCount(BaseModel):
     """Task load per member for manager dashboard insights."""
-
     user_id: int
     full_name: str
     task_count: int
-
-
 class DashboardResponse(BaseModel):
     total_projects: int
     total_tasks: int
