@@ -15,10 +15,12 @@ const INITIAL_SIGNUP_FORM = {
 export default function SignupPage() {
   const { signup } = useAuth();
   const navigate = useNavigate();
-
+  const [signupForm, setSignupForm] = useState(INITIAL_SIGNUP_FORM);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const updateSignupField = (field) => (event) => {
+    setSignupForm(current => ({ ...current, [field]: event.target.value }));
   const [form, setForm] = useState(INITIAL_SIGNUP_FORM);
-
-
   const [form, setForm] = useState({ email: '', full_name: '', organization_name: '', password: '', role: 'member' });
 
 
@@ -34,6 +36,7 @@ export default function SignupPage() {
       const orgGuess = value.includes('@') ? value.split('@')[1].split('.')[0] : '';
       return { ...f, email: value, organization_name: orgGuess };
     });
+
   };
 
   const handleSubmit = async (e) => {
@@ -41,7 +44,7 @@ export default function SignupPage() {
     setError('');
     setLoading(true);
     try {
-      const me = await signup(form);
+      const me = await signup(signupForm);
       navigate(me?.role === 'admin' ? '/manager-dashboard' : '/member-dashboard');
     } catch (err) {
       setError(err.message);
@@ -68,17 +71,21 @@ export default function SignupPage() {
         <form onSubmit={handleSubmit} className="auth-form">
           <Input
             id="full_name" label="Full name"
-            value={form.full_name} onChange={set('full_name')}
+            value={signupForm.full_name} onChange={updateSignupField('full_name')}
             placeholder="Jane Smith" required
           />
           <Input
             id="organization_name" label="Organization name"
+
+            value={signupForm.organization_name} onChange={updateSignupField('organization_name')}
+
             value={form.organization_name} onChange={set('organization_name')}
+
             placeholder="Acme Corp" required
           />
           <Input
             id="email" label="Email" type="email"
-            value={form.email} onChange={set('email')}
+            value={signupForm.email} onChange={updateSignupField('email')}
             placeholder="you@company.com" required
           />
           <Input
@@ -96,13 +103,17 @@ export default function SignupPage() {
           />
           <Input
             id="password" label="Password" type="password"
-            value={form.password} onChange={set('password')}
+            value={signupForm.password} onChange={updateSignupField('password')}
             placeholder="Min 8 chars, include number + capital"
             required
           />
           <div className="input-wrap">
             <label htmlFor="role" className="input-label">Account type</label>
+
+            <select id="role" className="input" value={signupForm.role} onChange={updateSignupField('role')}>
+
             <select id="role" className="input" value={form.role} onChange={set('role')}>
+
               <option value="admin">Admin</option>
               <option value="member">Member</option>
             </select>
