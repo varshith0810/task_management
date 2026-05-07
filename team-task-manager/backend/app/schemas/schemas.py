@@ -1,17 +1,9 @@
 from __future__ import annotations
 from datetime import datetime
 from typing import Optional, List
-
-
 from pydantic import BaseModel, EmailStr, Field, field_validator
-
-
 from app.models.models import GlobalRole, ProjectRole, TaskStatus, TaskPriority
 import re
-
-
-
-
 class SignupRequest(BaseModel):
     email: EmailStr
     full_name: str
@@ -27,11 +19,7 @@ class SignupRequest(BaseModel):
             raise ValueError("Organization name is required")
         return value
 
-
     organization_name: str
-
-
-
 
     @field_validator("password")
     @classmethod
