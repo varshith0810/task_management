@@ -9,6 +9,7 @@ import os
 # Ensure the app package is importable when running as `python seed.py` from /app
 sys.path.insert(0, os.path.dirname(__file__))
  
+from app.db.migrations import ensure_user_organization_column
 from app.db.session import Base, engine, SessionLocal
 from app.models.models import GlobalRole, Project, ProjectMember, ProjectRole, Task, TaskPriority, TaskStatus, User
 from app.core.security import hash_password
@@ -16,10 +17,12 @@ from app.core.security import hash_password
 DEFAULT_PASSWORD = "Admin1234!"  # Change via env var in production
 ADMIN_EMAIL = os.getenv("SEED_ADMIN_EMAIL", "admin@taskmanager.com")
 ADMIN_PASSWORD = os.getenv("SEED_ADMIN_PASSWORD", DEFAULT_PASSWORD)
+DEFAULT_ORGANIZATION = os.getenv("SEED_ORGANIZATION_NAME", "TaskFlow")
  
  
 def seed():
     Base.metadata.create_all(bind=engine)
+    ensure_user_organization_column(engine)
     db = SessionLocal()
     try:
         # ── Admin user ────────────────────────────────────────────────────────
@@ -28,6 +31,7 @@ def seed():
             admin = User(
                 email=ADMIN_EMAIL,
                 full_name="Admin User",
+                organization_name=DEFAULT_ORGANIZATION,
                 hashed_password=hash_password(ADMIN_PASSWORD),
                 role=GlobalRole.ADMIN,
             )
@@ -35,6 +39,8 @@ def seed():
             db.flush()
             print(f"[seed] Created admin: {ADMIN_EMAIL}")
         else:
+            if not admin.organization_name:
+                admin.organization_name = DEFAULT_ORGANIZATION
             print(f"[seed] Admin already exists: {ADMIN_EMAIL} — skipping")
  
         # ── Sample member ─────────────────────────────────────────────────────
@@ -44,12 +50,15 @@ def seed():
             member = User(
                 email=member_email,
                 full_name="Sample Member",
+                organization_name=DEFAULT_ORGANIZATION,
                 hashed_password=hash_password(ADMIN_PASSWORD),
                 role=GlobalRole.MEMBER,
             )
             db.add(member)
             db.flush()
             print(f"[seed] Created member: {member_email}")
+        elif not member.organization_name:
+            member.organization_name = DEFAULT_ORGANIZATION
  
         # ── Sample project ────────────────────────────────────────────────────
         project = db.query(Project).filter_by(name="Demo Project").first()
