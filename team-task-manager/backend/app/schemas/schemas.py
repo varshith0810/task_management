@@ -18,7 +18,9 @@ class SignupRequest(BaseModel):
         if not value:
             raise ValueError("Organization name is required")
         return value
+
     organization_name: str
+
     @field_validator("password")
     @classmethod
     def strong_password(cls, v):
@@ -49,7 +51,9 @@ class UserPublic(BaseModel):
     email: str
     full_name: str
     organization_name: str
+
     organization_name: Optional[str] = None
+
     role: GlobalRole
     is_active: bool
     created_at: datetime
@@ -60,6 +64,7 @@ class ProjectCreate(BaseModel):
     name: str
     description: Optional[str] = None
     member_ids: List[int] = Field(default_factory=list)
+
 class ProjectUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
