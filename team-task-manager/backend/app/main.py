@@ -33,7 +33,7 @@ def ensure_user_organization_column(engine):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
-    ensure_user_organization_column()
+    ensure_user_organization_column(engine)
     yield
 def create_app() -> FastAPI:
     app = FastAPI(
